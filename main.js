@@ -4,8 +4,13 @@ import { GameState } from './gameState.js';
 import { DragDropHandler } from './dragDropHandler.js';
 import { LeaderboardManager } from './leaderboardManager.js';
 
+console.log('Main.js loaded successfully!');
+console.log('Game data loaded:', gameData);
+
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+console.log('Supabase URL:', supabaseUrl);
+console.log('Supabase Key exists:', !!supabaseKey);
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const gameState = new GameState();
@@ -41,20 +46,29 @@ function shuffleArray(array) {
 }
 
 function initializeGame() {
+  console.log('Initializing game...');
   gameState.reset();
   clearInterval(timerInterval);
 
   const selectedPairs = shuffleArray(gameData).slice(0, 8);
+  console.log('Selected pairs:', selectedPairs);
+
   gameState.correctAnswers = selectedPairs.reduce((acc, pair) => {
     acc[pair.country] = pair.capital;
     return acc;
   }, {});
+
+  console.log('Countries list element:', elements.countriesList);
+  console.log('Capitals list element:', elements.capitalsList);
 
   elements.countriesList.innerHTML = '';
   elements.capitalsList.innerHTML = '';
 
   const shuffledCountries = shuffleArray(selectedPairs.map(p => p.country));
   const shuffledCapitals = shuffleArray(selectedPairs.map(p => p.capital));
+
+  console.log('Shuffled countries:', shuffledCountries);
+  console.log('Shuffled capitals:', shuffledCapitals);
 
   shuffledCountries.forEach(country => {
     const countryDiv = document.createElement('div');
@@ -64,6 +78,7 @@ function initializeGame() {
     countryDiv.dataset.country = country;
     elements.countriesList.appendChild(countryDiv);
     dragDropHandler.makeDraggable(countryDiv);
+    console.log('Added country:', country);
   });
 
   shuffledCapitals.forEach(capital => {
@@ -73,7 +88,11 @@ function initializeGame() {
     dropZone.dataset.capital = capital;
     elements.capitalsList.appendChild(dropZone);
     dragDropHandler.makeDroppable(dropZone, handleDrop);
+    console.log('Added capital:', capital);
   });
+
+  console.log('Countries list HTML:', elements.countriesList.innerHTML.substring(0, 200));
+  console.log('Capitals list HTML:', elements.capitalsList.innerHTML.substring(0, 200));
 
   updateDisplay();
   startTimer();
