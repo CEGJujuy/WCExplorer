@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Simple - Arrastre</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background: #f0f0f0;
+    }
+    h1 { text-align: center; color: #333; }
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .column h2 {
+      color: #2563eb;
+      margin-bottom: 20px;
+    }
+    .country-item {
+      background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+      color: white;
+      padding: 15px 20px;
+      margin: 10px 0;
+      border-radius: 8px;
+      cursor: grab;
+      user-select: none;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      transition: all 0.3s ease;
+    }
+    .country-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    }
+    .country-item:active {
+      cursor: grabbing;
+    }
+    .country-item.dragging {
+      opacity: 0.5;
+    }
+    .drop-zone {
+      background: #f7fafc;
+      border: 3px dashed #cbd5e0;
+      padding: 15px 20px;
+      margin: 10px 0;
+      border-radius: 8px;
+      min-height: 55px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #4a5568;
+      transition: all 0.3s ease;
+    }
+    .drop-zone.drag-over {
+      background: #e6fffa;
+      border-color: #38b2ac;
+      transform: scale(1.02);
+    }
+    .drop-zone.correct {
+      background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+      color: white;
+      border-color: #48bb78;
+      border-style: solid;
+    }
+    .drop-zone.incorrect {
+      background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+      color: white;
+      border-color: #fc8181;
+      border-style: solid;
+    }
+    .score {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: #2563eb;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Test de Arrastre - 10 Países y Capitales</h1>
+  <div class="score">Puntos: <span id="score">0</span></div>
+
+  <div class="container">
+    <div class="column">
+      <h2>Países (Arrastra →)</h2>
+      <div id="countries"></div>
+    </div>
+    <div class="column">
+      <h2>Capitales (Suelta aquí ↓)</h2>
+      <div id="capitals"></div>
+    </div>
+  </div>
+
+  <script>
+    const gameData = [
+      { country: 'Francia', capital: 'París' },
+      { country: 'Alemania', capital: 'Berlín' },
+      { country: 'Italia', capital: 'Roma' },
+      { country: 'España', capital: 'Madrid' },
+      { country: 'Portugal', capital: 'Lisboa' },
+      { country: 'Reino Unido', capital: 'Londres' },
+      { country: 'Grecia', capital: 'Atenas' },
+      { country: 'Países Bajos', capital: 'Ámsterdam' },
+      { country: 'Bélgica', capital: 'Bruselas' },
+      { country: 'Austria', capital: 'Viena' }
+    ];
+
+    let draggedElement = null;
+    let score = 0;
+
+    const countriesContainer = document.getElementById('countries');
+    const capitalsContainer = document.getElementById('capitals');
+    const scoreDisplay = document.getElementById('score');
+
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    const shuffledData = shuffle([...gameData]);
+    const shuffledCapitals = shuffle(shuffledData.map(p => p.capital));
+
+    shuffledData.forEach(pair => {
+      const countryDiv = document.createElement('div');
+      countryDiv.className = 'country-item';
+      countryDiv.textContent = pair.country;
+      countryDiv.draggable = true;
+      countryDiv.dataset.country = pair.country;
+      countryDiv.dataset.capital = pair.capital;
+
+      countryDiv.addEventListener('dragstart', function(e) {
+        draggedElement = this;
+        this.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', pair.country);
+      });
+
+      countryDiv.addEventListener('dragend', function() {
+        this.classList.remove('dragging');
+      });
+
+      countriesContainer.appendChild(countryDiv);
+    });
+
+    shuffledCapitals.forEach(capital => {
+      const dropZone = document.createElement('div');
+      dropZone.className = 'drop-zone';
+      dropZone.textContent = capital;
+      dropZone.dataset.capital = capital;
+
+      dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (!this.classList.contains('correct')) {
+          this.classList.add('drag-over');
+        }
+      });
+
+      dropZone.addEventListener('dragleave', function() {
+        this.classList.remove('drag-over');
+      });
+
+      dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+
+        if (!draggedElement || this.classList.contains('correct')) {
+          return;
+        }
+
+        const droppedCountry = draggedElement.dataset.country;
+        const correctCapital = draggedElement.dataset.capital;
+        const dropCapital = this.dataset.capital;
+
+        if (correctCapital === dropCapital) {
+          this.classList.add('correct');
+          this.textContent = droppedCountry + ' ✓';
+          score += 10;
+          scoreDisplay.textContent = score;
+
+          draggedElement.style.opacity = '0.3';
+          draggedElement.draggable = false;
+        } else {
+          this.classList.add('incorrect');
+          this.textContent = droppedCountry + ' ✗';
+          score = Math.max(0, score - 2);
+          scoreDisplay.textContent = score;
+
+          setTimeout(() => {
+            this.classList.remove('incorrect');
+            this.textContent = dropCapital;
+          }, 1000);
+        }
+      });
+
+      capitalsContainer.appendChild(dropZone);
+    });
+
+    console.log('Juego cargado. 10 países y 10 capitales listos.');
+  </script>
+</body>
+</html>
