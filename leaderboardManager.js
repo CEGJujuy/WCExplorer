@@ -17,11 +17,11 @@ export class LeaderboardManager {
 
       if (error) {
         console.error('Error submitting score:', error);
-        alert('Failed to submit score. Please try again.');
+        alert('Error al enviar la puntuación. Por favor intenta de nuevo.');
       }
     } catch (err) {
       console.error('Error submitting score:', err);
-      alert('Failed to submit score. Please try again.');
+      alert('Error al enviar la puntuación. Por favor intenta de nuevo.');
     }
   }
 
@@ -36,12 +36,12 @@ export class LeaderboardManager {
 
       if (error) {
         console.error('Error fetching leaderboard:', error);
-        container.innerHTML = '<p>Failed to load leaderboard.</p>';
+        container.innerHTML = '<p>Error al cargar la tabla de posiciones.</p>';
         return;
       }
 
       if (!data || data.length === 0) {
-        container.innerHTML = '<p>No scores yet. Be the first to play!</p>';
+        container.innerHTML = '<p>¡Aún no hay puntuaciones! ¡Sé el primero en jugar!</p>';
         return;
       }
 
@@ -66,7 +66,7 @@ export class LeaderboardManager {
         .join('');
     } catch (err) {
       console.error('Error displaying leaderboard:', err);
-      container.innerHTML = '<p>Failed to load leaderboard.</p>';
+      container.innerHTML = '<p>Error al cargar la tabla de posiciones.</p>';
     }
   }
 

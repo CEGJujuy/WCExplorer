@@ -151,7 +151,7 @@ async function submitScore() {
   const name = elements.playerName.value.trim();
 
   if (!name) {
-    alert('Please enter your name!');
+    alert('¡Por favor ingresa tu nombre!');
     return;
   }
 
