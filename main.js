@@ -41,10 +41,12 @@ function shuffleArray(array) {
 }
 
 function initializeGame() {
+  console.log('Initializing game...');
   gameState.reset();
   clearInterval(timerInterval);
 
   const selectedPairs = shuffleArray(gameData).slice(0, 10);
+  console.log('Selected pairs:', selectedPairs);
 
   gameState.correctAnswers = {};
   selectedPairs.forEach(pair => {
@@ -57,59 +59,73 @@ function initializeGame() {
   const shuffledCountries = shuffleArray(selectedPairs.map(p => p.country));
   const shuffledCapitals = shuffleArray(selectedPairs.map(p => p.capital));
 
-  shuffledCountries.forEach(country => {
+  console.log('Creating countries...');
+  shuffledCountries.forEach((country, index) => {
     const countryDiv = document.createElement('div');
     countryDiv.className = 'country-item';
     countryDiv.textContent = country;
     countryDiv.draggable = true;
     countryDiv.dataset.country = country;
 
-    countryDiv.addEventListener('dragstart', (e) => {
-      draggedElement = countryDiv;
-      countryDiv.classList.add('dragging');
+    countryDiv.addEventListener('dragstart', function(e) {
+      console.log('Drag started:', country);
+      draggedElement = this;
+      this.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', country);
     });
 
-    countryDiv.addEventListener('dragend', () => {
-      countryDiv.classList.remove('dragging');
+    countryDiv.addEventListener('dragend', function() {
+      console.log('Drag ended');
+      this.classList.remove('dragging');
     });
 
     elements.countriesList.appendChild(countryDiv);
+    console.log(`Added country ${index + 1}:`, country);
   });
 
-  shuffledCapitals.forEach(capital => {
+  console.log('Creating capitals...');
+  shuffledCapitals.forEach((capital, index) => {
     const dropZone = document.createElement('div');
     dropZone.className = 'drop-zone';
     dropZone.textContent = capital;
     dropZone.dataset.capital = capital;
 
-    dropZone.addEventListener('dragover', (e) => {
+    dropZone.addEventListener('dragover', function(e) {
       e.preventDefault();
-      if (!dropZone.classList.contains('correct')) {
-        dropZone.classList.add('drag-over');
+      e.dataTransfer.dropEffect = 'move';
+      if (!this.classList.contains('correct')) {
+        this.classList.add('drag-over');
       }
     });
 
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('drag-over');
+    dropZone.addEventListener('dragleave', function() {
+      this.classList.remove('drag-over');
     });
 
-    dropZone.addEventListener('drop', (e) => {
+    dropZone.addEventListener('drop', function(e) {
       e.preventDefault();
-      dropZone.classList.remove('drag-over');
+      console.log('Drop event on:', capital);
+      this.classList.remove('drag-over');
 
-      if (!draggedElement || dropZone.classList.contains('correct')) {
+      if (!draggedElement || this.classList.contains('correct')) {
+        console.log('No dragged element or already correct');
         return;
       }
 
       const countryName = draggedElement.dataset.country;
-      const capitalName = dropZone.dataset.capital;
+      const capitalName = this.dataset.capital;
 
-      handleDrop(countryName, capitalName, dropZone);
+      console.log('Checking:', countryName, 'with', capitalName);
+      handleDrop(countryName, capitalName, this);
     });
 
     elements.capitalsList.appendChild(dropZone);
+    console.log(`Added capital ${index + 1}:`, capital);
   });
+
+  console.log('Countries in DOM:', elements.countriesList.children.length);
+  console.log('Capitals in DOM:', elements.capitalsList.children.length);
 
   updateDisplay();
   startTimer();
@@ -117,8 +133,10 @@ function initializeGame() {
 
 function handleDrop(countryName, capitalName, dropZone) {
   const correctCapital = gameState.correctAnswers[countryName];
+  console.log('Expected:', correctCapital, 'Got:', capitalName);
 
   if (correctCapital === capitalName) {
+    console.log('Correct!');
     gameState.score += 10;
     gameState.matchedCount++;
     dropZone.classList.add('correct');
@@ -139,6 +157,7 @@ function handleDrop(countryName, capitalName, dropZone) {
       endGame();
     }
   } else {
+    console.log('Incorrect!');
     gameState.score = Math.max(0, gameState.score - 2);
     dropZone.classList.add('incorrect');
     dropZone.innerHTML = countryName;
@@ -224,4 +243,5 @@ elements.playerName.addEventListener('keypress', (e) => {
   }
 });
 
+console.log('Main.js loaded. Initializing game...');
 initializeGame();

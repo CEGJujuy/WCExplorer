@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Drag and Drop</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .column {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .country-item {
+      background: #2563eb;
+      color: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      cursor: grab;
+      user-select: none;
+    }
+    .country-item:active {
+      cursor: grabbing;
+    }
+    .country-item.dragging {
+      opacity: 0.5;
+    }
+    .drop-zone {
+      background: #f7fafc;
+      border: 3px dashed #cbd5e0;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .drop-zone.drag-over {
+      background: #e6fffa;
+      border-color: #38b2ac;
+    }
+    .drop-zone.correct {
+      background: #48bb78;
+      color: white;
+      border-color: #48bb78;
+      border-style: solid;
+    }
+    .drop-zone.incorrect {
+      background: #fc8181;
+      color: white;
+      border-color: #fc8181;
+      border-style: solid;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center;">Test: Arrastra países a capitales</h1>
+  <div class="container">
+    <div class="column">
+      <h2>Países</h2>
+      <div id="countries"></div>
+    </div>
+    <div class="column">
+      <h2>Capitales</h2>
+      <div id="capitals"></div>
+    </div>
+  </div>
+
+  <script>
+    const gameData = [
+      { country: 'Francia', capital: 'París' },
+      { country: 'Alemania', capital: 'Berlín' },
+      { country: 'Italia', capital: 'Roma' },
+      { country: 'España', capital: 'Madrid' },
+      { country: 'Portugal', capital: 'Lisboa' }
+    ];
+
+    let draggedElement = null;
+
+    const countriesContainer = document.getElementById('countries');
+    const capitalsContainer = document.getElementById('capitals');
+
+    gameData.forEach(pair => {
+      // Create country
+      const countryDiv = document.createElement('div');
+      countryDiv.className = 'country-item';
+      countryDiv.textContent = pair.country;
+      countryDiv.draggable = true;
+      countryDiv.dataset.country = pair.country;
+
+      countryDiv.addEventListener('dragstart', (e) => {
+        draggedElement = countryDiv;
+        countryDiv.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      countryDiv.addEventListener('dragend', () => {
+        countryDiv.classList.remove('dragging');
+      });
+
+      countriesContainer.appendChild(countryDiv);
+
+      // Create capital drop zone
+      const dropZone = document.createElement('div');
+      dropZone.className = 'drop-zone';
+      dropZone.textContent = pair.capital;
+      dropZone.dataset.capital = pair.capital;
+
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+      });
+
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('drag-over');
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+
+        if (!draggedElement) return;
+
+        const countryName = draggedElement.dataset.country;
+        const capitalName = dropZone.dataset.capital;
+
+        // Find correct capital
+        const correctPair = gameData.find(p => p.country === countryName);
+
+        if (correctPair.capital === capitalName) {
+          dropZone.classList.add('correct');
+          dropZone.textContent = countryName + ' ✓';
+          draggedElement.style.opacity = '0.3';
+          draggedElement.draggable = false;
+        } else {
+          dropZone.classList.add('incorrect');
+          dropZone.textContent = countryName + ' ✗';
+          setTimeout(() => {
+            dropZone.classList.remove('incorrect');
+            dropZone.textContent = capitalName;
+          }, 1000);
+        }
+      });
+
+      capitalsContainer.appendChild(dropZone);
+    });
+  </script>
+</body>
+</html>
