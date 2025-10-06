@@ -204,7 +204,8 @@ body {
 .leaderboard-content {
   text-align: center;
   padding: 40px;
-  max-width: 500px;
+  max-width: 600px;
+  width: 90%;
 }
 
 .game-over-content h2,
@@ -290,10 +291,12 @@ body {
 }
 
 .leaderboard-list {
-  max-height: 400px;
+  max-height: 500px;
   overflow-y: auto;
   margin-bottom: 30px;
   padding: 10px;
+  min-height: 200px;
+  width: 100%;
 }
 
 .leaderboard-item {

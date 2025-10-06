@@ -237,6 +237,9 @@ async function submitScore() {
 
   console.log('Enviando puntuación:', name, score, timeRemaining);
 
+  elements.submitScore.disabled = true;
+  elements.submitScore.textContent = 'Enviando...';
+
   try {
     const { error } = await supabase
       .from('leaderboard')
@@ -251,20 +254,33 @@ async function submitScore() {
     if (error) {
       console.error('Error al enviar puntuación:', error);
       alert('Error al enviar la puntuación. Por favor intenta de nuevo.');
+      elements.submitScore.disabled = false;
+      elements.submitScore.textContent = 'Enviar Puntuación';
       return;
     }
 
     console.log('Puntuación enviada correctamente');
+    elements.submitScore.textContent = '¡Enviado!';
     elements.playerName.value = '';
-    await showLeaderboard(name);
+
+    setTimeout(async () => {
+      await showLeaderboard(name);
+      elements.submitScore.disabled = false;
+      elements.submitScore.textContent = 'Enviar Puntuación';
+    }, 1500);
   } catch (err) {
     console.error('Error:', err);
     alert('Error al enviar la puntuación. Por favor intenta de nuevo.');
+    elements.submitScore.disabled = false;
+    elements.submitScore.textContent = 'Enviar Puntuación';
   }
 }
 
 async function showLeaderboard(currentPlayerName = null) {
   console.log('Mostrando tabla de posiciones...');
+
+  elements.leaderboardList.innerHTML = '<p style="text-align: center; padding: 40px; color: #4a5568; font-size: 1.2rem; font-weight: 600;">⏳ Cargando tabla de posiciones...</p>';
+
   elements.gameOverScreen.classList.add('hidden');
   elements.gameScreen.classList.add('hidden');
   elements.leaderboardScreen.classList.remove('hidden');
@@ -279,12 +295,12 @@ async function showLeaderboard(currentPlayerName = null) {
 
     if (error) {
       console.error('Error al cargar tabla:', error);
-      elements.leaderboardList.innerHTML = '<p>Error al cargar la tabla de posiciones.</p>';
+      elements.leaderboardList.innerHTML = '<p style="text-align: center; padding: 40px; color: #fc8181; font-size: 1.2rem;">⚠️ Error al cargar la tabla de posiciones. Por favor intenta de nuevo.</p>';
       return;
     }
 
     if (!data || data.length === 0) {
-      elements.leaderboardList.innerHTML = '<p>¡Aún no hay puntuaciones! ¡Sé el primero en jugar!</p>';
+      elements.leaderboardList.innerHTML = '<p style="text-align: center; padding: 40px; color: #4a5568; font-size: 1.2rem;">🎮 ¡Aún no hay puntuaciones! ¡Sé el primero en jugar!</p>';
       return;
     }
 
@@ -311,7 +327,7 @@ async function showLeaderboard(currentPlayerName = null) {
       .join('');
   } catch (err) {
     console.error('Error:', err);
-    elements.leaderboardList.innerHTML = '<p>Error al cargar la tabla de posiciones.</p>';
+    elements.leaderboardList.innerHTML = '<p style="text-align: center; padding: 40px; color: #fc8181; font-size: 1.2rem;">⚠️ Error al cargar la tabla de posiciones. Por favor intenta de nuevo.</p>';
   }
 }
 
