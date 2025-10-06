@@ -26,7 +26,7 @@ const elements = {
   submitScore: document.getElementById('submit-score'),
   playAgain: document.getElementById('play-again'),
   showLeaderboard: document.getElementById('show-leaderboard'),
-  backToGame: document.getElementById('back-to-game')
+  backToMenu: document.getElementById('back-to-menu')
 };
 
 let timerInterval;
@@ -147,6 +147,13 @@ function resetToGame() {
   initializeGame();
 }
 
+function backToMainMenu() {
+  elements.gameOverScreen.classList.add('hidden');
+  elements.leaderboardScreen.classList.add('hidden');
+  elements.gameScreen.classList.remove('hidden');
+  initializeGame();
+}
+
 async function submitScore() {
   const name = elements.playerName.value.trim();
 
@@ -173,7 +180,7 @@ async function showLeaderboard(currentPlayerName = null) {
 elements.submitScore.addEventListener('click', submitScore);
 elements.playAgain.addEventListener('click', resetToGame);
 elements.showLeaderboard.addEventListener('click', () => showLeaderboard());
-elements.backToGame.addEventListener('click', resetToGame);
+elements.backToMenu.addEventListener('click', backToMainMenu);
 
 elements.playerName.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
