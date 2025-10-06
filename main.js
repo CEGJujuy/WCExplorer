@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { gameData } from './gameData.js';
 import { GameState } from './gameState.js';
-import { DragDropHandler } from './dragDropHandler.js';
 import { LeaderboardManager } from './leaderboardManager.js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -9,7 +8,6 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const gameState = new GameState();
-const dragDropHandler = new DragDropHandler();
 const leaderboardManager = new LeaderboardManager(supabase);
 
 const elements = {
@@ -26,10 +24,12 @@ const elements = {
   submitScore: document.getElementById('submit-score'),
   playAgain: document.getElementById('play-again'),
   showLeaderboard: document.getElementById('show-leaderboard'),
-  backToMenu: document.getElementById('back-to-menu')
+  backToMenu: document.getElementById('back-to-menu'),
+  leaderboardList: document.getElementById('leaderboard-list')
 };
 
 let timerInterval;
+let draggedElement = null;
 
 function shuffleArray(array) {
   const shuffled = [...array];
@@ -46,10 +46,10 @@ function initializeGame() {
 
   const selectedPairs = shuffleArray(gameData).slice(0, 10);
 
-  gameState.correctAnswers = selectedPairs.reduce((acc, pair) => {
-    acc[pair.country] = pair.capital;
-    return acc;
-  }, {});
+  gameState.correctAnswers = {};
+  selectedPairs.forEach(pair => {
+    gameState.correctAnswers[pair.country] = pair.capital;
+  });
 
   elements.countriesList.innerHTML = '';
   elements.capitalsList.innerHTML = '';
@@ -61,8 +61,19 @@ function initializeGame() {
     const countryDiv = document.createElement('div');
     countryDiv.className = 'country-item';
     countryDiv.textContent = country;
+    countryDiv.draggable = true;
     countryDiv.dataset.country = country;
-    dragDropHandler.makeDraggable(countryDiv);
+
+    countryDiv.addEventListener('dragstart', (e) => {
+      draggedElement = countryDiv;
+      countryDiv.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    countryDiv.addEventListener('dragend', () => {
+      countryDiv.classList.remove('dragging');
+    });
+
     elements.countriesList.appendChild(countryDiv);
   });
 
@@ -71,7 +82,32 @@ function initializeGame() {
     dropZone.className = 'drop-zone';
     dropZone.textContent = capital;
     dropZone.dataset.capital = capital;
-    dragDropHandler.makeDroppable(dropZone, handleDrop);
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (!dropZone.classList.contains('correct')) {
+        dropZone.classList.add('drag-over');
+      }
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+
+      if (!draggedElement || dropZone.classList.contains('correct')) {
+        return;
+      }
+
+      const countryName = draggedElement.dataset.country;
+      const capitalName = dropZone.dataset.capital;
+
+      handleDrop(countryName, capitalName, dropZone);
+    });
+
     elements.capitalsList.appendChild(dropZone);
   });
 
@@ -79,16 +115,14 @@ function initializeGame() {
   startTimer();
 }
 
-function handleDrop(countryName, capitalName) {
+function handleDrop(countryName, capitalName, dropZone) {
   const correctCapital = gameState.correctAnswers[countryName];
-  const dropZone = [...elements.capitalsList.children].find(
-    zone => zone.dataset.capital === capitalName
-  );
 
   if (correctCapital === capitalName) {
     gameState.score += 10;
     gameState.matchedCount++;
     dropZone.classList.add('correct');
+    dropZone.innerHTML = countryName;
 
     setTimeout(() => {
       const countryItem = [...elements.countriesList.children].find(
@@ -107,6 +141,8 @@ function handleDrop(countryName, capitalName) {
   } else {
     gameState.score = Math.max(0, gameState.score - 2);
     dropZone.classList.add('incorrect');
+    dropZone.innerHTML = countryName;
+
     setTimeout(() => {
       dropZone.classList.remove('incorrect', 'filled');
       dropZone.innerHTML = capitalName;
