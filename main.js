@@ -5,7 +5,7 @@ import { DragDropHandler } from './dragDropHandler.js';
 import { LeaderboardManager } from './leaderboardManager.js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_SUPABASE_ANON_KEY;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const gameState = new GameState();
