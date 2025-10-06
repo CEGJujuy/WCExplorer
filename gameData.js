@@ -1,0 +1,22 @@
+export const gameData = [
+  { country: 'France', capital: 'Paris' },
+  { country: 'Germany', capital: 'Berlin' },
+  { country: 'Italy', capital: 'Rome' },
+  { country: 'Spain', capital: 'Madrid' },
+  { country: 'Portugal', capital: 'Lisbon' },
+  { country: 'United Kingdom', capital: 'London' },
+  { country: 'Greece', capital: 'Athens' },
+  { country: 'Netherlands', capital: 'Amsterdam' },
+  { country: 'Belgium', capital: 'Brussels' },
+  { country: 'Austria', capital: 'Vienna' },
+  { country: 'Switzerland', capital: 'Bern' },
+  { country: 'Poland', capital: 'Warsaw' },
+  { country: 'Czech Republic', capital: 'Prague' },
+  { country: 'Hungary', capital: 'Budapest' },
+  { country: 'Sweden', capital: 'Stockholm' },
+  { country: 'Norway', capital: 'Oslo' },
+  { country: 'Denmark', capital: 'Copenhagen' },
+  { country: 'Finland', capital: 'Helsinki' },
+  { country: 'Ireland', capital: 'Dublin' },
+  { country: 'Romania', capital: 'Bucharest' }
+];
