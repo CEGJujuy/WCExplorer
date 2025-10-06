@@ -4,13 +4,8 @@ import { GameState } from './gameState.js';
 import { DragDropHandler } from './dragDropHandler.js';
 import { LeaderboardManager } from './leaderboardManager.js';
 
-console.log('Main.js loaded successfully!');
-console.log('Game data loaded:', gameData);
-
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-console.log('Supabase URL:', supabaseUrl);
-console.log('Supabase Key exists:', !!supabaseKey);
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const gameState = new GameState();
@@ -46,44 +41,29 @@ function shuffleArray(array) {
 }
 
 function initializeGame() {
-  console.log('Initializing game...');
   gameState.reset();
   clearInterval(timerInterval);
 
-  const selectedPairs = shuffleArray(gameData).slice(0, 8);
-  console.log('Selected pairs:', selectedPairs);
+  const selectedPairs = shuffleArray(gameData).slice(0, 10);
 
   gameState.correctAnswers = selectedPairs.reduce((acc, pair) => {
     acc[pair.country] = pair.capital;
     return acc;
   }, {});
 
-  console.log('Countries list element:', elements.countriesList);
-  console.log('Capitals list element:', elements.capitalsList);
-
-  // Limpiar completamente los contenedores
-  while (elements.countriesList.firstChild) {
-    elements.countriesList.removeChild(elements.countriesList.firstChild);
-  }
-  while (elements.capitalsList.firstChild) {
-    elements.capitalsList.removeChild(elements.capitalsList.firstChild);
-  }
+  elements.countriesList.innerHTML = '';
+  elements.capitalsList.innerHTML = '';
 
   const shuffledCountries = shuffleArray(selectedPairs.map(p => p.country));
   const shuffledCapitals = shuffleArray(selectedPairs.map(p => p.capital));
 
-  console.log('Shuffled countries:', shuffledCountries);
-  console.log('Shuffled capitals:', shuffledCapitals);
-
   shuffledCountries.forEach(country => {
     const countryDiv = document.createElement('div');
     countryDiv.className = 'country-item';
-    countryDiv.draggable = true;
     countryDiv.textContent = country;
     countryDiv.dataset.country = country;
     dragDropHandler.makeDraggable(countryDiv);
     elements.countriesList.appendChild(countryDiv);
-    console.log('Added country:', country);
   });
 
   shuffledCapitals.forEach(capital => {
@@ -93,11 +73,7 @@ function initializeGame() {
     dropZone.dataset.capital = capital;
     dragDropHandler.makeDroppable(dropZone, handleDrop);
     elements.capitalsList.appendChild(dropZone);
-    console.log('Added capital:', capital);
   });
-
-  console.log('Total countries added:', elements.countriesList.children.length);
-  console.log('Total capitals added:', elements.capitalsList.children.length);
 
   updateDisplay();
   startTimer();
