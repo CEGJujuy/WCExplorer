@@ -61,8 +61,13 @@ function initializeGame() {
   console.log('Countries list element:', elements.countriesList);
   console.log('Capitals list element:', elements.capitalsList);
 
-  elements.countriesList.innerHTML = '';
-  elements.capitalsList.innerHTML = '';
+  // Limpiar completamente los contenedores
+  while (elements.countriesList.firstChild) {
+    elements.countriesList.removeChild(elements.countriesList.firstChild);
+  }
+  while (elements.capitalsList.firstChild) {
+    elements.capitalsList.removeChild(elements.capitalsList.firstChild);
+  }
 
   const shuffledCountries = shuffleArray(selectedPairs.map(p => p.country));
   const shuffledCapitals = shuffleArray(selectedPairs.map(p => p.capital));
@@ -76,8 +81,8 @@ function initializeGame() {
     countryDiv.draggable = true;
     countryDiv.textContent = country;
     countryDiv.dataset.country = country;
-    elements.countriesList.appendChild(countryDiv);
     dragDropHandler.makeDraggable(countryDiv);
+    elements.countriesList.appendChild(countryDiv);
     console.log('Added country:', country);
   });
 
@@ -86,13 +91,13 @@ function initializeGame() {
     dropZone.className = 'drop-zone';
     dropZone.textContent = capital;
     dropZone.dataset.capital = capital;
-    elements.capitalsList.appendChild(dropZone);
     dragDropHandler.makeDroppable(dropZone, handleDrop);
+    elements.capitalsList.appendChild(dropZone);
     console.log('Added capital:', capital);
   });
 
-  console.log('Countries list HTML:', elements.countriesList.innerHTML.substring(0, 200));
-  console.log('Capitals list HTML:', elements.capitalsList.innerHTML.substring(0, 200));
+  console.log('Total countries added:', elements.countriesList.children.length);
+  console.log('Total capitals added:', elements.capitalsList.children.length);
 
   updateDisplay();
   startTimer();
